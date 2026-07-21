@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MopUp Cleaning — Team Console</title>
+</head>
+<body>
+<!-- MopUp Cleaning Services LLC — Internal CRM & Invoicing (Phase 1, team-operated) -->
+<!-- Staff book sessions on behalf of customers (one-off or weekly) and generate monthly invoices. -->
+<div id="mopup-app"></div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap');
+
+  #mopup-app, #mopup-app *, #mopup-app *::before, #mopup-app *::after { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  #mopup-app h1, #mopup-app h2, #mopup-app h3, #mopup-app p { margin:0; }
+  #mopup-app input, #mopup-app textarea, #mopup-app select, #mopup-app button { margin:0; }
+  /* restore auto-centering (kept explicit so nothing cancels it) */
+  #mopup-app .wrap, #mopup-app .hdr-in { margin-left:auto; margin-right:auto; }
+  #mopup-app { min-height:100vh; background:#F2F7F6; color:#12312F; font-family:'Inter','Segoe UI',system-ui,sans-serif; font-size:15px; line-height:1.45; max-width:100%; overflow-x:hidden; }
+  .display { font-family:'Bricolage Grotesque','Inter',sans-serif; }
+
+  .hdr { background:#0B3B3C; padding:16px 20px; }
+  .hdr-in { max-width:1040px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:12px; min-width:0; }
+  .logo-b { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; background:linear-gradient(135deg,#0E8A7B,#35C4B0); flex-shrink:0; }
+  .logo-t { color:#fff; font-weight:800; font-size:17px; line-height:1.15; }
+  .logo-s { color:#8FC7BF; font-size:11.5px; }
+  .nav { display:flex; gap:4px; background:#0E4A4A; border-radius:999px; padding:4px; flex-wrap:nowrap; min-width:0; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav button { border:0; cursor:pointer; padding:7px 15px; border-radius:999px; font:600 13px 'Inter',sans-serif; color:#BFE3DD; background:transparent; white-space:nowrap; flex:0 0 auto; }
+  .nav button.on { background:#F5B82E; color:#3B2E00; }
+  @media(max-width:860px){
+    .hdr-in { flex-direction:column; align-items:stretch; gap:12px; }
+    .nav { justify-content:flex-start; }
+  }
+
+  .wrap { max-width:1040px; margin:0 auto; padding:28px 20px 8px; }
+  @media(max-width:560px){ .wrap { padding:18px 14px 8px; } }
+
+  .card { background:#fff; border:1px solid #E2EEEB; border-radius:20px; padding:20px; }
+  .btn { border:0; cursor:pointer; border-radius:12px; font:700 14px 'Inter',sans-serif; padding:12px 18px; }
+  .btn:disabled { background:#DCE9E6 !important; color:#7C9793 !important; cursor:not-allowed; }
+  .btn-p{background:#0E8A7B;color:#fff}.btn-y{background:#F5B82E;color:#3B2E00}.btn-g{background:#EAF4F2;color:#0A6B5D}.btn-r{background:#FBE3E1;color:#A83A31}.btn-d{background:#0B3B3C;color:#F5B82E}
+  .btn-sm{padding:8px 14px;font-size:12.5px;border-radius:10px}
+  .lbl{display:block;font:600 11px 'Inter',sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#5B7573;margin-bottom:6px}
+  .inp,select.inp,textarea.inp{width:100%;border:1px solid #CFE0DD;background:#fff;color:#12312F;border-radius:12px;padding:10px 12px;font:500 14px 'Inter',sans-serif;outline:none}
+  .inp:focus{border-color:#0E8A7B;box-shadow:0 0 0 3px rgba(14,138,123,.15)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font:600 11.5px 'Inter',sans-serif;white-space:nowrap}
+  .muted{color:#5B7573;font-size:13.5px}.tiny{color:#7C9793;font-size:12px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid{display:grid;gap:16px}
+  .hero{border-radius:24px;padding:24px 28px;background:linear-gradient(120deg,#0B3B3C 0%,#0E8A7B 90%);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .hero h1{color:#fff;font-size:clamp(20px,3.5vw,26px);font-weight:800;line-height:1.15}
+  .hero p{color:#BFE3DD;font-size:13px;margin-top:6px}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(min-width:720px){.stats{grid-template-columns:repeat(4,1fr)}}
+  .stat{background:#fff;border:1px solid #E2EEEB;border-radius:16px;padding:14px}
+  .stat .l{font:600 10.5px 'Inter',sans-serif;text-transform:uppercase;color:#7C9793}.stat .v{font-weight:800;font-size:20px;color:#0B3B3C;margin-top:4px}
+
+  .chip{border:1px solid #CFE0DD;background:#fff;color:#5B7573;border-radius:999px;padding:6px 15px;font:600 12.5px 'Inter',sans-serif;cursor:pointer}
+  .chip.on{background:#0B3B3C;color:#F5B82E;border-color:#0B3B3C}
+  .sel{border:1px solid #CFE0DD;border-radius:10px;padding:8px 10px;font:600 13px 'Inter',sans-serif;color:#12312F;background:#fff;outline:none;cursor:pointer}
+
+  .toggle{display:flex;gap:0;border:1px solid #CFE0DD;border-radius:12px;overflow:hidden}
+  .toggle button{flex:1;border:0;background:#fff;color:#5B7573;padding:11px;font:700 13.5px 'Inter',sans-serif;cursor:pointer}
+  .toggle button.on{background:#0B3B3C;color:#F5B82E}
+
+  .dow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .dow button{border:1px solid #CFE0DD;background:#fff;color:#5B7573;border-radius:10px;padding:9px 0;font:700 12.5px 'Inter',sans-serif;cursor:pointer}
+  .dow button.on{background:#0E8A7B;color:#fff;border-color:#0E8A7B}
+
+  .step{display:flex;align-items:center;gap:10px;border:1px solid #CFE0DD;background:#fff;border-radius:12px;padding:6px 8px}
+  .step button{width:32px;height:32px;border:0;border-radius:10px;font:700 18px 'Inter',sans-serif;cursor:pointer}
+  .step .minus{background:#EAF4F2;color:#0A6B5D}.step .plus{background:#0E8A7B;color:#fff}.step span{flex:1;text-align:center;font-weight:700}
+
+  .datehead{font:700 13.5px 'Inter',sans-serif;color:#5B7573;display:flex;align-items:center;gap:8px;margin-top:4px}
+  .datehead.today{color:#0A6B5D}
+  .tdy{background:#F5B82E;color:#3B2E00;font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:700}
+  .hist{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;background:#F7FBFA;border-radius:10px;padding:8px 12px;font-size:12px}
+
+  table.inv{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.inv th{text-align:left;font:600 11px 'Inter',sans-serif;text-transform:uppercase;letter-spacing:.04em;color:#7C9793;padding:8px 10px;border-bottom:2px solid #E2EEEB}
+  table.inv td{padding:9px 10px;border-bottom:1px solid #EEF4F3}
+  table.inv td.num,table.inv th.num{text-align:right}
+  table.inv tr.tot td{font-weight:800;border-top:2px solid #0B3B3C;border-bottom:0;padding-top:12px}
+
+  /* mobile invoice line-item cards */
+  .inv-cards{display:none}
+  .inv-tot-m{display:none}
+  .linecard{border:1px solid #EEF4F3;border-radius:12px;padding:12px}
+  .linecard .lc-top{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:13.5px}
+  .linecard .lc-top .amt{color:#0A6B5D;white-space:nowrap}
+  .linecard .lc-meta{font-size:12.5px;color:#5B7573;margin-top:2px}
+  .linecard .lc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+  .linecard .lc-grid div{background:#F7FBFA;border-radius:8px;padding:6px 4px;text-align:center;font-size:10.5px;color:#7C9793}
+  .linecard .lc-grid b{display:block;font-size:13px;color:#12312F;margin-top:1px}
+  .inv-tot-m .r{display:flex;justify-content:space-between;padding:7px 2px;font-size:14px}
+  .inv-tot-m .r.big{border-top:2px solid #0B3B3C;margin-top:4px;padding-top:11px;font-weight:800;font-size:16px}
+  @media(max-width:620px){
+    table.inv{display:none}
+    .inv-cards{display:grid;gap:10px}
+    .inv-tot-m{display:block;margin-top:12px}
+    .invsheet{padding:18px}
+    .invsheet .brandrow{flex-direction:column}
+    .invsheet .invno{text-align:left}
+  }
+
+  .invsheet{background:#fff;border:1px solid #E2EEEB;border-radius:18px;padding:28px}
+  .invsheet .brandrow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:2px solid #0B3B3C;padding-bottom:16px;margin-bottom:18px}
+  .invsheet .biz{font-weight:800;font-size:18px;color:#0B3B3C}
+  .invsheet .invno{text-align:right}
+  .invsheet .invno .big{font-weight:800;font-size:22px;color:#0E8A7B}
+  .billto{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0B3B3C;color:#fff;padding:12px 22px;border-radius:999px;font:600 13.5px 'Inter',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+  .toast.show{opacity:1}
+  .foot{text-align:center;color:#7C9793;font-size:11.5px;padding:26px 16px}
+  .warn{background:#FFF4D6;color:#8A6100;border-radius:12px;padding:12px 16px;font-size:13.5px}
+  .empty{text-align:center;padding:48px 20px;color:#7C9793;font-size:13.5px}
+
+  @media(prefers-reduced-motion:reduce){#mopup-app *{transition:none!important;animation:none!important}}
+  @media print{
+    body *{visibility:hidden}
+    #mu-print, #mu-print *{visibility:visible}
+    #mu-print{position:absolute;left:0;top:0;width:100%}
+    .no-print{display:none!important}
+    .invsheet{border:0;border-radius:0;padding:0}
+    table.inv{display:table!important}
+    .inv-cards,.inv-tot-m{display:none!important}
+  }
+</style>
+
+<script>
+/* ================= config ================= */
+const SERVICES = [
+  { id:"house", name:"House Cleaning", rate:35 },
+  { id:"deep", name:"Deep Cleaning", rate:45 },
+  { id:"office", name:"Office Cleaning", rate:40 },
+  { id:"maid", name:"Full-Time Maid", rate:30 },
+  { id:"balcony", name:"Balcony Cleaning", rate:40 },
+  { id:"sofa", name:"Sofa Cleaning", rate:45 },
+];
+const SLOTS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+const STAFF = ["Unassigned","Team A — Maria + Joy","Team B — Anna + Grace","Team C — Rhea + Lin","Ahmed (Supervisor)"];
+const DOW = [["1","Mon"],["2","Tue"],["3","Wed"],["4","Thu"],["5","Fri"],["6","Sat"]]; // Sun (0) excluded
+const VAT = 0.05; // UAE VAT 5% — toggleable per invoice
+const CK = "mopup:crm:customers:v1";
+const SK = "mopup:crm:sessions:v1";
+const PIN = "2026";
+const STATUS_META = {
+  scheduled:{label:"Scheduled",bg:"#DFF5EE",fg:"#0A6B5D"},
+  completed:{label:"Completed",bg:"#E5EAF9",fg:"#2F4AA8"},
+  cancelled:{label:"Cancelled",bg:"#FBE3E1",fg:"#A83A31"},
+};
+
+/* ================= state ================= */
+const S = {
+  customers:[], sessions:[], loaded:false, memoryOnly:false,
+  authed:false, view:"dash",
+  // booking form
+  bk:{ customerId:"", service:"house", type:"oneoff", date:todayStr(), time:"09:00",
+       hours:3, cleaners:1, rate:35, weeks:4, days:["2"], notes:"" },
+  // customer form
+  cust:{ id:null, name:"", phone:"", address:"", notes:"" },
+  custSearch:"",
+  calRange:"week",
+  // invoice
+  invCustomer:"", invMonth: monthStr(), invVat:true, invGenerated:null,
+};
+
+/* ================= helpers ================= */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthStr(){ return new Date().toISOString().slice(0,7); }
+function niceDate(d){ try{return new Date(d+"T00:00:00").toLocaleDateString("en-AE",{weekday:"short",day:"numeric",month:"short",year:"numeric"});}catch(e){return d;} }
+function dayName(d){ try{return new Date(d+"T00:00:00").toLocaleDateString("en-AE",{weekday:"long"});}catch(e){return"";} }
+function niceMonth(m){ try{return new Date(m+"-01T00:00:00").toLocaleDateString("en-AE",{month:"long",year:"numeric"});}catch(e){return m;} }
+function isSunday(d){ return new Date(d+"T00:00:00").getDay()===0; }
+function fmtAED(n){ return "AED "+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtAED0(n){ return "AED "+Number(n).toLocaleString(); }
+function uid(p){ return p+Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function svc(id){ return SERVICES.find(x=>x.id===id)||{}; }
+function cust(id){ return S.customers.find(c=>c.id===id)||{}; }
+function badge(m){ return `<span class="badge" style="background:${m.bg};color:${m.fg}">${m.label}</span>`; }
+function sessionAmount(s){ return s.rate*s.cleaners*s.hours; }
+
+/* ================= persistence ================= */
+async function boot(){
+  try{
+    if(window.storage){
+      const c=await window.storage.get(CK).catch(()=>null);
+      const k=await window.storage.get(SK).catch(()=>null);
+      if(c&&c.value) S.customers=JSON.parse(c.value);
+      if(k&&k.value) S.sessions=JSON.parse(k.value);
+    } else S.memoryOnly=true;
+  }catch(e){ if(!window.storage) S.memoryOnly=true; }
+  if(S.customers.length===0 && S.sessions.length===0) seed();
+  S.loaded=true; render(); loadPersist();
+}
+async function loadPersist(){ /* saved on each mutation */ }
+async function saveCustomers(){ try{ if(window.storage) await window.storage.set(CK,JSON.stringify(S.customers)); }catch(e){S.memoryOnly=true;} }
+async function saveSessions(){ try{ if(window.storage) await window.storage.set(SK,JSON.stringify(S.sessions)); }catch(e){S.memoryOnly=true;} }
+
+/* demo seed so invoicing is explorable immediately */
+function seed(){
+  const c1={id:uid("c_"),name:"Sarah Mansour",phone:"+971 50 111 2233",address:"Marina Heights T2, Apt 1104, Dubai Marina",notes:"Prefers morning slots"};
+  const c2={id:uid("c_"),name:"Omar Khalid",phone:"+971 52 998 7766",address:"Boulevard Plaza, Office 1502, Downtown",notes:"Office — weekly"};
+  S.customers=[c1,c2];
+  const m=monthStr();
+  const mk=(cid,service,date,time,hours,cleaners,rate,type,rid,status)=>({id:uid("s_"),customerId:cid,service,date,time,hours,cleaners,rate,type,recurrenceId:rid||null,status:status||"completed",paid:false,staff:"Team A — Maria + Joy",notes:""});
+  const wed = weekdayDatesInMonth(m,"3");
+  const rid="r_seed";
+  S.sessions=[
+    mk(c1.id,"house",m+"-03","09:00",3,1,35,"oneoff",null,"completed"),
+    mk(c1.id,"deep",m+"-17","10:00",4,2,45,"oneoff",null,"completed"),
+    ...wed.slice(0,4).map(d=>mk(c2.id,"office",d,"08:00",4,2,40,"weekly",rid,"completed")),
+  ];
+}
+function weekdayDatesInMonth(m,dow){
+  const [y,mo]=m.split("-").map(Number);
+  const out=[]; const last=new Date(y,mo,0).getDate();
+  for(let day=1;day<=last;day++){ const dt=new Date(y,mo-1,day); if(String(dt.getDay())===dow) out.push(`${m}-${String(day).padStart(2,"0")}`); }
+  return out;
+}
+
+/* ================= toast ================= */
+let tT=null;
+function toast(msg){ const t=document.getElementById("mu-toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("show"),3200); }
+
+/* ================= actions ================= */
+function setView(v){ S.view=v; if(v==="book"){ S.bk.rate=svc(S.bk.service).rate; } render(); }
+function tryPin(){ const v=document.getElementById("mu-pin").value; if(v===PIN){S.authed=true;render();} else toast("Wrong PIN — try 2026"); }
+
+/* -- customers -- */
+function editCust(id){ const c=cust(id); S.cust={id:c.id,name:c.name,phone:c.phone,address:c.address,notes:c.notes||""}; S.view="customers"; render(); }
+function newCustForm(){ S.cust={id:null,name:"",phone:"",address:"",notes:""}; render(); }
+function bindCust(k,el){ S.cust[k]=el.value; const b=document.getElementById("mu-savecust"); if(b) b.disabled=!(S.cust.name.trim()&&S.cust.phone.trim().length>=7); }
+function saveCust(){
+  if(!(S.cust.name.trim()&&S.cust.phone.trim().length>=7)) return;
+  if(S.cust.id){ S.customers=S.customers.map(c=>c.id===S.cust.id?Object.assign({},c,S.cust):c); toast("Customer updated ✓"); }
+  else { S.customers.push(Object.assign({id:uid("c_")},S.cust)); toast("Customer added ✓"); }
+  saveCustomers(); S.cust={id:null,name:"",phone:"",address:"",notes:""}; render();
+}
+function delCust(id){
+  if(S.sessions.some(s=>s.customerId===id)){ toast("Can't delete — customer has sessions"); return; }
+  S.customers=S.customers.filter(c=>c.id!==id); saveCustomers(); render();
+}
+function searchCust(el){ S.custSearch=el.value; renderCustListOnly(); }
+
+/* -- booking -- */
+function bkSet(k,v){ S.bk[k]=v; if(k==="service") S.bk.rate=svc(v).rate; render(); }
+function bkInput(k,el){ let v=el.value; if(k==="rate"||k==="hours"||k==="cleaners"||k==="weeks") v=Number(v)||0; S.bk[k]=v; if(k==="rate"){} else render(); }
+function bkStep(k,delta,min,max){ S.bk[k]=Math.min(max,Math.max(min,S.bk[k]+delta)); render(); }
+function bkToggleDay(d){ const i=S.bk.days.indexOf(d); if(i>=0) S.bk.days.splice(i,1); else S.bk.days.push(d); render(); }
+function bkPreviewDates(){
+  const b=S.bk;
+  if(b.type==="oneoff") return isSunday(b.date)?[]:[b.date];
+  // weekly: from start date, for N weeks, on selected weekdays
+  const start=new Date(b.date+"T00:00:00");
+  const out=[];
+  for(let w=0;w<b.weeks;w++){
+    for(const d of b.days){
+      const base=new Date(start); base.setDate(base.getDate()+w*7);
+      // align base to selected weekday within that week
+      const diff=(Number(d)-base.getDay()+7)%7;
+      const dt=new Date(base); dt.setDate(base.getDate()+diff);
+      if(dt.getDay()!==0){ out.push(dt.toISOString().slice(0,10)); }
+    }
+  }
+  return [...new Set(out)].sort();
+}
+function bkCreate(){
+  const b=S.bk;
+  if(!b.customerId){ toast("Pick a customer first"); return; }
+  const dates=bkPreviewDates();
+  if(dates.length===0){ toast("No valid dates (Sundays are skipped)"); return; }
+  const rid=b.type==="weekly"?uid("r_"):null;
+  dates.forEach(date=>{
+    S.sessions.push({ id:uid("s_"), customerId:b.customerId, service:b.service, date, time:b.time,
+      hours:b.hours, cleaners:b.cleaners, rate:b.rate, type:b.type, recurrenceId:rid,
+      status:"scheduled", paid:false, staff:"Unassigned", notes:b.notes });
+  });
+  saveSessions();
+  toast(dates.length===1?"Session booked ✓":`${dates.length} weekly sessions booked ✓`);
+  S.view="calendar"; render();
+}
+
+/* -- session row controls -- */
+function sesStatus(id,el){ S.sessions=S.sessions.map(s=>s.id===id?Object.assign({},s,{status:el.value}):s); saveSessions(); render(); }
+function sesStaff(id,el){ S.sessions=S.sessions.map(s=>s.id===id?Object.assign({},s,{staff:el.value}):s); saveSessions(); toast("Cleaner assigned ✓"); }
+function sesDel(id){ S.sessions=S.sessions.filter(s=>s.id!==id); saveSessions(); render(); }
+function setCalRange(r){ S.calRange=r; render(); }
+
+/* -- invoice -- */
+function invSet(k,el){ S.invCustomer = k==="cust"?el.value:S.invCustomer; if(k==="month") S.invMonth=el.value; S.invGenerated=null; render(); }
+function invToggleVat(){ S.invVat=!S.invVat; if(S.invGenerated) genInvoice(); render(); }
+function invMonthSessions(){
+  return S.sessions.filter(s=>s.customerId===S.invCustomer && s.date.slice(0,7)===S.invMonth && s.status!=="cancelled")
+    .sort((a,b)=>(a.date+a.time)<(b.date+b.time)?-1:1);
+}
+function genInvoice(){
+  if(!S.invCustomer){ toast("Select a customer"); return; }
+  const list=invMonthSessions();
+  if(list.length===0){ toast("No sessions for that customer this month"); return; }
+  const sub=list.reduce((t,s)=>t+sessionAmount(s),0);
+  const vat=S.invVat?sub*VAT:0;
+  S.invGenerated={
+    no:"INV-"+S.invMonth.replace("-","")+"-"+cust(S.invCustomer).name.split(" ")[0].toUpperCase().slice(0,4),
+    date:todayStr(), customerId:S.invCustomer, month:S.invMonth, list, sub, vat, total:sub+vat, vatOn:S.invVat,
+  };
+  render();
+}
+function printInvoice(){ window.print(); }
+
+/* ================= render ================= */
+function render(){
+  const app=document.getElementById("mopup-app");
+  if(!S.authed){
+    app.innerHTML = shell(`
+      <div style="max-width:340px;margin:60px auto 0;text-align:center" class="grid">
+        <div style="font-size:40px">🔐</div>
+        <div class="display" style="font-weight:800;font-size:20px">Team sign-in</div>
+        <div class="muted">This is an internal tool for MopUp staff. Enter the PIN (demo: <b>2026</b>).</div>
+        <input id="mu-pin" class="inp" type="password" maxlength="4" placeholder="••••" style="text-align:center;font-size:18px;letter-spacing:.3em" onkeydown="if(event.key==='Enter')tryPin()">
+        <button class="btn btn-d" onclick="tryPin()">Unlock</button>
+      </div>`, false);
+    return;
+  }
+  let body="";
+  if(!S.loaded) body=`<div class="empty">Loading…</div>`;
+  else if(S.view==="dash") body=renderDash();
+  else if(S.view==="book") body=renderBook();
+  else if(S.view==="calendar") body=renderCalendar();
+  else if(S.view==="customers") body=renderCustomers();
+  else if(S.view==="invoice") body=renderInvoice();
+  app.innerHTML = shell(body, true);
+}
+
+function shell(body, nav){
+  return `
+    <div class="hdr"><div class="hdr-in">
+      <div class="logo"><div class="logo-b">🫧</div>
+        <div><div class="logo-t display">MopUp Cleaning · Team Console</div>
+        <div class="logo-s">Al Quoz, Dubai · Mon–Sat · 8 AM – 7 PM</div></div></div>
+      ${nav?`<div class="nav">
+        <button class="${S.view==='dash'?'on':''}" onclick="setView('dash')">Dashboard</button>
+        <button class="${S.view==='book'?'on':''}" onclick="setView('book')">Book session</button>
+        <button class="${S.view==='calendar'?'on':''}" onclick="setView('calendar')">Calendar</button>
+        <button class="${S.view==='customers'?'on':''}" onclick="setView('customers')">Customers</button>
+        <button class="${S.view==='invoice'?'on':''}" onclick="setView('invoice')">Invoices</button>
+      </div>`:""}
+    </div></div>
+    <div class="wrap">${body}
+      ${S.memoryOnly?`<div class="warn no-print" style="margin-top:20px">Persistent storage isn't available here — data resets when the page closes.</div>`:""}
+    </div>
+    <div class="foot no-print">MopUp Cleaning Services LLC · +971 52 548 1829 · info@mopupcleaning.com · TRN: 100XXXXXXXXXXXX</div>
+    <div class="toast" id="mu-toast"></div>`;
+}
+
+/* -------- dashboard -------- */
+function renderDash(){
+  const today=todayStr();
+  const upcoming=S.sessions.filter(s=>s.date>=today&&s.status==="scheduled").sort((a,b)=>(a.date+a.time)<(b.date+b.time)?-1:1);
+  const thisMonth=S.sessions.filter(s=>s.date.slice(0,7)===monthStr()&&s.status!=="cancelled");
+  const hoursMonth=thisMonth.reduce((t,s)=>t+s.hours*s.cleaners,0);
+  const revMonth=thisMonth.reduce((t,s)=>t+sessionAmount(s),0);
+  return `
+    <div class="hero">
+      <div><h1 class="display">Good day, team 👋</h1><p>Book customer sessions, manage the calendar, and raise monthly invoices — all in one place.</p></div>
+      <button class="btn btn-y" onclick="setView('book')">+ Book a session</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="l">Active customers</div><div class="v display">${S.customers.length}</div></div>
+      <div class="stat"><div class="l">Upcoming sessions</div><div class="v display">${upcoming.length}</div></div>
+      <div class="stat"><div class="l">Hours booked (${niceMonth(monthStr()).split(" ")[0]})</div><div class="v display">${hoursMonth}</div></div>
+      <div class="stat"><div class="l">Billable this month</div><div class="v display">${fmtAED0(revMonth)}</div></div>
+    </div>
+    <div class="grid" style="margin-top:20px">
+      <div class="datehead">Next up</div>
+      ${upcoming.length===0?`<div class="card"><div class="empty">No upcoming sessions. <span class="tiny">Book one from the “Book session” tab.</span></div></div>`:
+        upcoming.slice(0,6).map(sessRow).join("")}
+    </div>`;
+}
+
+/* -------- book session -------- */
+function renderBook(){
+  const b=S.bk;
+  const preview=bkPreviewDates();
+  const amountEach=b.rate*b.cleaners*b.hours;
+  const custOpts=S.customers.map(c=>`<option value="${c.id}" ${b.customerId===c.id?"selected":""}>${esc(c.name)} — ${esc(c.phone)}</option>`).join("");
+  return `
+    <div class="row" style="justify-content:space-between;margin-bottom:14px">
+      <div class="display" style="font-weight:800;font-size:24px">Book a session</div>
+      <span class="tiny">Booked by staff on the customer's behalf (WhatsApp/phone enquiry)</span>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr;gap:16px">
+      <div class="card grid" style="gap:16px">
+        <div><span class="lbl">Customer</span>
+          ${S.customers.length===0
+            ? `<div class="warn">No customers yet. <b onclick="setView('customers')" style="cursor:pointer;text-decoration:underline">Add a customer first →</b></div>`
+            : `<div class="row">
+                 <select class="inp" style="flex:1;min-width:160px" onchange="bkSet('customerId',this.value)"><option value="">Select customer…</option>${custOpts}</select>
+                 <button class="btn btn-g" style="flex-shrink:0" onclick="setView('customers')">+ New</button>
+               </div>`}
+        </div>
+
+        <div><span class="lbl">Session type</span>
+          <div class="toggle">
+            <button class="${b.type==='oneoff'?'on':''}" onclick="bkSet('type','oneoff')">One-off session</button>
+            <button class="${b.type==='weekly'?'on':''}" onclick="bkSet('type','weekly')">Weekly (recurring)</button>
+          </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div><span class="lbl">Service</span>
+            <select class="inp" onchange="bkSet('service',this.value)">
+              ${SERVICES.map(s=>`<option value="${s.id}" ${b.service===s.id?"selected":""}>${s.name} (AED ${s.rate}/hr)</option>`).join("")}
+            </select>
+          </div>
+          <div><span class="lbl">Rate (AED / hr / cleaner)</span>
+            <input class="inp" type="number" min="0" value="${b.rate}" oninput="S.bk.rate=Number(this.value)||0;renderBookSummaryOnly()">
+          </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div><span class="lbl">Cleaners</span>
+            <div class="step"><button class="minus" onclick="bkStep('cleaners',-1,1,8)">−</button><span>${b.cleaners}</span><button class="plus" onclick="bkStep('cleaners',1,1,8)">+</button></div></div>
+          <div><span class="lbl">Hours per session</span>
+            <div class="step"><button class="minus" onclick="bkStep('hours',-1,1,12)">−</button><span>${b.hours}</span><button class="plus" onclick="bkStep('hours',1,1,12)">+</button></div></div>
+        </div>
+
+        ${b.type==="oneoff" ? `
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+            <div><span class="lbl">Date (closed Sundays)</span>
+              <input type="date" class="inp" min="${todayStr()}" value="${b.date}" onchange="bkSet('date',this.value)"></div>
+            <div><span class="lbl">Time</span>
+              <select class="inp" onchange="bkSet('time',this.value)">${SLOTS.map(s=>`<option ${b.time===s?"selected":""}>${s}</option>`).join("")}</select></div>
+          </div>` : `
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+            <div><span class="lbl">Start date</span>
+              <input type="date" class="inp" min="${todayStr()}" value="${b.date}" onchange="bkSet('date',this.value)"></div>
+            <div><span class="lbl">Time</span>
+              <select class="inp" onchange="bkSet('time',this.value)">${SLOTS.map(s=>`<option ${b.time===s?"selected":""}>${s}</option>`).join("")}</select></div>
+          </div>
+          <div><span class="lbl">Repeat on</span>
+            <div class="dow">${DOW.map(d=>`<button class="${b.days.includes(d[0])?'on':''}" onclick="bkToggleDay('${d[0]}')">${d[1]}</button>`).join("")}</div></div>
+          <div><span class="lbl">For how many weeks</span>
+            <div class="step" style="max-width:220px"><button class="minus" onclick="bkStep('weeks',-1,1,26)">−</button><span>${b.weeks} week${b.weeks>1?"s":""}</span><button class="plus" onclick="bkStep('weeks',1,1,26)">+</button></div></div>
+        `}
+
+        <div><span class="lbl">Notes (optional)</span>
+          <input class="inp" placeholder="Gate code, pets, preferred products…" value="${esc(b.notes)}" oninput="S.bk.notes=this.value"></div>
+      </div>
+
+      <div class="card" id="mu-booksum">${bookSummary(preview,amountEach)}</div>
+    </div>`;
+}
+function bookSummary(preview,amountEach){
+  const b=S.bk;
+  const total=amountEach*preview.length;
+  return `
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="lbl" style="margin-bottom:2px">Summary</div>
+        <div style="font-weight:700">${svc(b.service).name} · ${b.type==="weekly"?"Weekly":"One-off"}</div>
+        <div class="tiny" style="margin-top:2px">${b.cleaners} cleaner${b.cleaners>1?"s":""} × ${b.hours} hrs @ AED ${b.rate}/hr = <b>${fmtAED0(amountEach)}</b> per session</div>
+      </div>
+      <div style="text-align:right">
+        <div class="tiny">${preview.length} session${preview.length!==1?"s":""}</div>
+        <div class="display" style="font-weight:800;font-size:22px;color:#0B3B3C">${fmtAED0(total)}</div>
+      </div>
+    </div>
+    ${preview.length?`<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+      ${preview.slice(0,12).map(d=>`<span class="chip" style="cursor:default">${new Date(d+"T00:00:00").toLocaleDateString("en-AE",{day:"numeric",month:"short"})} · ${dayName(d).slice(0,3)}</span>`).join("")}
+      ${preview.length>12?`<span class="tiny" style="align-self:center">+${preview.length-12} more</span>`:""}
+    </div>`:`<div class="warn" style="margin-top:12px">No valid dates yet — ${b.type==="weekly"?"pick at least one weekday":"pick a non-Sunday date"}.</div>`}
+    <button class="btn btn-y" style="width:100%;margin-top:16px" ${(!b.customerId||preview.length===0)?"disabled":""} onclick="bkCreate()">
+      ${b.type==="weekly"?`Book ${preview.length} weekly session${preview.length!==1?"s":""}`:"Book session"} — ${fmtAED0(total)}
+    </button>`;
+}
+function renderBookSummaryOnly(){ const el=document.getElementById("mu-booksum"); if(el) el.innerHTML=bookSummary(bkPreviewDates(), S.bk.rate*S.bk.cleaners*S.bk.hours); }
+
+/* -------- calendar / sessions list -------- */
+function renderCalendar(){
+  const today=todayStr(), now=new Date();
+  const inRange=d=>{
+    if(S.calRange==="all") return true;
+    const dd=new Date(d+"T00:00:00");
+    if(S.calRange==="today") return d===today;
+    if(S.calRange==="week"){ const diff=(dd-new Date(today+"T00:00:00"))/86400000; return diff>=-1&&diff<=7; }
+    return dd.getMonth()===now.getMonth()&&dd.getFullYear()===now.getFullYear();
+  };
+  const list=S.sessions.filter(s=>inRange(s.date)).sort((a,b)=>(a.date+a.time)<(b.date+b.time)?-1:1);
+  const byDate={}; list.forEach(s=>{(byDate[s.date]=byDate[s.date]||[]).push(s);});
+  return `
+    <div class="row" style="justify-content:space-between;margin-bottom:14px">
+      <div class="display" style="font-weight:800;font-size:24px">Sessions calendar</div>
+      <button class="btn btn-y btn-sm" onclick="setView('book')">+ Book session</button>
+    </div>
+    <div class="row" style="margin-bottom:16px">
+      ${[["today","Today"],["week","This week"],["month","This month"],["all","All"]].map(r=>`<button class="chip ${S.calRange===r[0]?'on':''}" onclick="setCalRange('${r[0]}')">${r[1]}</button>`).join("")}
+    </div>
+    ${list.length===0?`<div class="card"><div class="empty">No sessions in this period.</div></div>`:
+      Object.keys(byDate).map(date=>`
+        <div class="grid" style="gap:10px;margin-bottom:16px">
+          <div class="datehead ${date===today?'today':''}">${niceDate(date)} ${date===today?'<span class="tdy">TODAY</span>':''}<span class="tiny" style="font-weight:400">· ${byDate[date].length} session${byDate[date].length>1?"s":""}</span></div>
+          ${byDate[date].map(sessRow).join("")}
+        </div>`).join("")}`;
+}
+function sessRow(s){
+  const c=cust(s.customerId);
+  return `<div class="card" style="padding:14px;${s.status==='cancelled'?'opacity:.65':''}">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-weight:700;font-size:14px">${s.time} · ${esc(svc(s.service).name)} ${s.type==="weekly"?'<span class="badge" style="background:#EAF4F2;color:#0A6B5D">Weekly</span>':""}</div>
+        <div class="tiny" style="margin-top:2px">${esc(c.name||"—")} · ${esc(c.phone||"")}</div>
+        <div class="tiny" style="margin-top:2px">${s.cleaners} cleaner${s.cleaners>1?"s":""} × ${s.hours} hrs · <b style="color:#0A6B5D">${fmtAED0(sessionAmount(s))}</b></div>
+      </div>
+      ${badge(STATUS_META[s.status])}
+    </div>
+    <div class="row no-print" style="margin-top:10px">
+      <select class="sel" onchange="sesStatus('${s.id}',this)">${Object.keys(STATUS_META).map(k=>`<option value="${k}" ${s.status===k?"selected":""}>${STATUS_META[k].label}</option>`).join("")}</select>
+      <select class="sel" onchange="sesStaff('${s.id}',this)">${STAFF.map(st=>`<option ${s.staff===st?"selected":""}>${st==="Unassigned"?"Assign cleaner…":esc(st)}</option>`).join("")}</select>
+      <button class="btn btn-r btn-sm" onclick="sesDel('${s.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+
+/* -------- customers -------- */
+function renderCustomers(){
+  const c=S.cust;
+  return `
+    <div class="display" style="font-weight:800;font-size:24px;margin-bottom:14px">Customers</div>
+    <div class="grid" style="grid-template-columns:1fr;gap:16px">
+      <div class="card grid" style="gap:12px">
+        <div style="font-weight:700">${c.id?"Edit customer":"Add a new customer"}</div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div><span class="lbl">Full name *</span><input class="inp" value="${esc(c.name)}" oninput="bindCust('name',this)"></div>
+          <div><span class="lbl">Phone / WhatsApp *</span><input class="inp" value="${esc(c.phone)}" oninput="bindCust('phone',this)"></div>
+        </div>
+        <div><span class="lbl">Address</span><input class="inp" value="${esc(c.address)}" oninput="bindCust('address',this)"></div>
+        <div><span class="lbl">Notes</span><input class="inp" placeholder="Preferences, access, etc." value="${esc(c.notes)}" oninput="bindCust('notes',this)"></div>
+        <div class="row">
+          <button id="mu-savecust" class="btn btn-p" ${(c.name.trim()&&c.phone.trim().length>=7)?"":"disabled"} onclick="saveCust()">${c.id?"Save changes":"Add customer"}</button>
+          ${c.id?`<button class="btn btn-g" onclick="newCustForm()">Cancel edit</button>`:""}
+        </div>
+      </div>
+      <div>
+        <input class="inp" style="margin-bottom:12px" placeholder="Search by name or phone…" value="${esc(S.custSearch)}" oninput="searchCust(this)">
+        <div id="mu-custlist">${custListHTML()}</div>
+      </div>
+    </div>`;
+}
+function custListHTML(){
+  const q=S.custSearch.toLowerCase();
+  const list=S.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||c.phone.includes(S.custSearch));
+  if(list.length===0) return `<div class="card"><div class="empty">${S.customers.length===0?"No customers yet — add your first one above.":"No matches."}</div></div>`;
+  return list.map(c=>{
+    const jobs=S.sessions.filter(s=>s.customerId===c.id&&s.status!=="cancelled");
+    const life=jobs.reduce((t,s)=>t+sessionAmount(s),0);
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700">${esc(c.name)}</div>
+          <div class="tiny" style="margin-top:2px">${esc(c.phone)}${c.address?" · "+esc(c.address):""}</div>
+          ${c.notes?`<div class="tiny" style="margin-top:2px;color:#5B7573">📝 ${esc(c.notes)}</div>`:""}
+        </div>
+        <span class="badge" style="background:#EAF4F2;color:#0A6B5D">${jobs.length} session${jobs.length!==1?"s":""} · ${fmtAED0(life)}</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-g btn-sm" onclick="editCust('${c.id}')">Edit</button>
+        <button class="btn btn-g btn-sm" onclick="S.bk.customerId='${c.id}';setView('book')">Book session</button>
+        <button class="btn btn-g btn-sm" onclick="S.invCustomer='${c.id}';setView('invoice')">Invoice</button>
+        <button class="btn btn-r btn-sm" onclick="delCust('${c.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function renderCustListOnly(){ const el=document.getElementById("mu-custlist"); if(el) el.innerHTML=custListHTML(); }
+
+/* -------- invoice -------- */
+function renderInvoice(){
+  const custOpts=S.customers.map(c=>`<option value="${c.id}" ${S.invCustomer===c.id?"selected":""}>${esc(c.name)}</option>`).join("");
+  const preview=S.invCustomer?invMonthSessions():[];
+  const previewTotal=preview.reduce((t,s)=>t+sessionAmount(s),0);
+  const previewHours=preview.reduce((t,s)=>t+s.hours*s.cleaners,0);
+  return `
+    <div class="display no-print" style="font-weight:800;font-size:24px;margin-bottom:14px">Monthly invoicing</div>
+    <div class="card no-print" style="margin-bottom:18px">
+      <div class="row" style="align-items:flex-end;gap:12px">
+        <div style="flex:1;min-width:160px"><span class="lbl">Customer</span>
+          <select class="inp" onchange="invSet('cust',this)"><option value="">Select customer…</option>${custOpts}</select></div>
+        <div style="flex:1;min-width:140px"><span class="lbl">Month</span>
+          <input type="month" class="inp" value="${S.invMonth}" onchange="invSet('month',this)"></div>
+        <label class="row" style="gap:6px;font:600 13px 'Inter';color:#5B7573;cursor:pointer;padding-bottom:10px">
+          <input type="checkbox" ${S.invVat?"checked":""} onchange="invToggleVat()"> Add 5% VAT</label>
+        <button class="btn btn-p" style="flex:1;min-width:150px" ${(!S.invCustomer||preview.length===0)?"disabled":""} onclick="genInvoice()">Generate invoice</button>
+      </div>
+      ${S.invCustomer?(preview.length===0
+        ? `<div class="warn" style="margin-top:14px">No sessions found for ${esc(cust(S.invCustomer).name)} in ${niceMonth(S.invMonth)}.</div>`
+        : `<div class="tiny" style="margin-top:12px">${preview.length} session${preview.length>1?"s":""} · ${previewHours} billable hours · ${fmtAED0(previewTotal)} before VAT</div>`)
+        :`<div class="tiny" style="margin-top:12px">Pick a customer and month to pull their sessions.</div>`}
+    </div>
+    ${S.invGenerated?invoiceSheet():""}
+  `;
+}
+function invoiceSheet(){
+  const g=S.invGenerated, c=cust(g.customerId);
+  const rows=g.list.map(s=>`
+    <tr>
+      <td>${niceDate(s.date)}</td>
+      <td>${dayName(s.date)}</td>
+      <td>${esc(svc(s.service).name)}${s.type==="weekly"?' <span class="tiny">(weekly)</span>':""}</td>
+      <td>${s.time}</td>
+      <td class="num">${s.cleaners}</td>
+      <td class="num">${s.hours}</td>
+      <td class="num">${s.cleaners*s.hours}</td>
+      <td class="num">${fmtAED(s.rate)}</td>
+      <td class="num">${fmtAED(sessionAmount(s))}</td>
+    </tr>`).join("");
+  const totalHours=g.list.reduce((t,s)=>t+s.hours*s.cleaners,0);
+  return `
+    <div class="row no-print" style="justify-content:flex-end;margin-bottom:12px">
+      <button class="btn btn-d" onclick="printInvoice()">🖨 Print / Save PDF</button>
+    </div>
+    <div id="mu-print"><div class="invsheet">
+      <div class="brandrow">
+        <div>
+          <div class="row" style="gap:10px"><div class="logo-b">🫧</div><div class="biz">MopUp Cleaning Services LLC</div></div>
+          <div class="tiny" style="margin-top:6px">Al Quoz, Dubai, UAE · +971 52 548 1829<br>info@mopupcleaning.com · TRN: 100XXXXXXXXXXXX</div>
+        </div>
+        <div class="invno">
+          <div class="lbl">Tax Invoice</div>
+          <div class="big">${g.no}</div>
+          <div class="tiny" style="margin-top:4px">Issued: ${niceDate(g.date)}<br>Period: ${niceMonth(g.month)}</div>
+        </div>
+      </div>
+      <div class="billto">
+        <div><div class="lbl">Bill to</div>
+          <div style="font-weight:700">${esc(c.name)}</div>
+          <div class="tiny">${esc(c.phone)}${c.address?"<br>"+esc(c.address):""}</div></div>
+        <div style="text-align:right"><div class="lbl">Summary</div>
+          <div class="tiny">${g.list.length} session${g.list.length>1?"s":""} · ${totalHours} billable hours</div></div>
+      </div>
+      <table class="inv">
+        <thead><tr>
+          <th>Date</th><th>Day</th><th>Service</th><th>Time</th>
+          <th class="num">Cleaners</th><th class="num">Hrs</th><th class="num">Billable hrs</th><th class="num">Rate</th><th class="num">Amount</th>
+        </tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="tot"><td colspan="8">Subtotal</td><td class="num">${fmtAED(g.sub)}</td></tr>
+          ${g.vatOn?`<tr><td colspan="8" style="text-align:right;font-weight:600">VAT (5%)</td><td class="num" style="font-weight:600">${fmtAED(g.vat)}</td></tr>`:""}
+          <tr class="tot"><td colspan="8">Total due</td><td class="num" style="color:#0E8A7B">${fmtAED(g.total)}</td></tr>
+        </tbody>
+      </table>
+      <div class="inv-cards">
+        ${g.list.map(s=>`
+          <div class="linecard">
+            <div class="lc-top"><span>${niceDate(s.date)} · ${dayName(s.date)}</span><span class="amt">${fmtAED(sessionAmount(s))}</span></div>
+            <div class="lc-meta">${esc(svc(s.service).name)}${s.type==="weekly"?" · weekly":""} · ${s.time}</div>
+            <div class="lc-grid">
+              <div>Cleaners<b>${s.cleaners}</b></div>
+              <div>Hours<b>${s.hours}</b></div>
+              <div>Billable<b>${s.cleaners*s.hours}</b></div>
+              <div>Rate<b>${s.rate}</b></div>
+            </div>
+          </div>`).join("")}
+      </div>
+      <div class="inv-tot-m">
+        <div class="r"><span>Subtotal</span><span>${fmtAED(g.sub)}</span></div>
+        ${g.vatOn?`<div class="r"><span>VAT (5%)</span><span>${fmtAED(g.vat)}</span></div>`:""}
+        <div class="r big"><span>Total due</span><span style="color:#0E8A7B">${fmtAED(g.total)}</span></div>
+      </div>
+      <div class="tiny" style="margin-top:18px;border-top:1px solid #E2EEEB;padding-top:12px">
+        Payment by cash or bank transfer within 7 days. Thank you for choosing MopUp Cleaning Services.<br>
+        Bank: [Bank name] · IBAN: AE00 0000 0000 0000 0000 000 · Account: MopUp Cleaning Services LLC
+      </div>
+    </div></div>`;
+}
+
+/* ================= boot ================= */
+render();
+boot();
+</script>
+</body>
+</html>

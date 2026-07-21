@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MopUp Cleaning Services — Book a Clean</title>
+</head>
+<body>
+<!-- MopUp Cleaning Services LLC — Booking Platform (Phase 1) — single-file HTML -->
+<div id="mopup-app"></div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap');
+
+  #mopup-app, #mopup-app *, #mopup-app *::before, #mopup-app *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  #mopup-app { max-width:100%; overflow-x:hidden; }
+  #mopup-app h1, #mopup-app h2, #mopup-app h3, #mopup-app p { margin:0; }
+  #mopup-app input, #mopup-app textarea, #mopup-app select, #mopup-app button { margin:0; }
+  /* restore auto-centering (kept explicit so nothing cancels it) */
+  #mopup-app .wrap, #mopup-app .hdr-in { margin-left:auto; margin-right:auto; }
+  #mopup-app {
+    min-height: 100vh; background: #F2F7F6; color: #12312F;
+    font-family: 'Inter','Segoe UI',system-ui,sans-serif; font-size: 15px; line-height: 1.45;
+  }
+  .display { font-family: 'Bricolage Grotesque','Inter',sans-serif; }
+
+  /* header */
+  .hdr { background:#0B3B3C; padding:16px 20px; }
+  .hdr-in { max-width:980px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:12px; min-width:0; }
+  .logo-b { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; background:linear-gradient(135deg,#0E8A7B,#35C4B0); flex-shrink:0; }
+  .logo-t { color:#fff; font-weight:800; font-size:17px; line-height:1.15; }
+  .logo-s { color:#8FC7BF; font-size:11.5px; }
+  .nav { display:flex; gap:4px; background:#0E4A4A; border-radius:999px; padding:4px; flex-wrap:nowrap; min-width:0; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav button { border:0; cursor:pointer; padding:7px 16px; border-radius:999px; font:600 13.5px 'Inter',sans-serif; color:#BFE3DD; background:transparent; white-space:nowrap; flex:0 0 auto; }
+  .nav button.on { background:#F5B82E; color:#3B2E00; }
+  @media(max-width:700px){
+    .hdr-in { flex-direction:column; align-items:stretch; gap:12px; }
+    .nav { justify-content:flex-start; }
+  }
+
+  .wrap { max-width:980px; margin:0 auto; padding:32px 20px 8px; }
+  @media(max-width:560px){ .wrap { padding:20px 14px 8px; } }
+
+  /* generic */
+  .card { background:#fff; border:1px solid #E2EEEB; border-radius:20px; padding:20px; }
+  .btn { border:0; cursor:pointer; border-radius:12px; font:700 14px 'Inter',sans-serif; padding:12px 18px; }
+  .btn:disabled { background:#DCE9E6 !important; color:#7C9793 !important; cursor:not-allowed; }
+  .btn-p { background:#0E8A7B; color:#fff; }
+  .btn-y { background:#F5B82E; color:#3B2E00; }
+  .btn-g { background:#EAF4F2; color:#0A6B5D; }
+  .btn-r { background:#FBE3E1; color:#A83A31; }
+  .btn-d { background:#0B3B3C; color:#F5B82E; }
+  .btn-sm { padding:8px 14px; font-size:12.5px; border-radius:10px; }
+  .lbl { display:block; font:600 11px 'Inter',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:#5B7573; margin-bottom:6px; }
+  .inp, select.inp, textarea.inp {
+    width:100%; border:1px solid #CFE0DD; background:#fff; color:#12312F;
+    border-radius:12px; padding:10px 12px; font:500 14px 'Inter',sans-serif; outline:none;
+  }
+  .inp:focus { border-color:#0E8A7B; box-shadow:0 0 0 3px rgba(14,138,123,.15); }
+  .badge { display:inline-block; padding:3px 9px; border-radius:999px; font:600 11.5px 'Inter',sans-serif; white-space:nowrap; }
+  .muted { color:#5B7573; font-size:13.5px; }
+  .tiny { color:#7C9793; font-size:12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .grid { display:grid; gap:16px; }
+
+  /* hero */
+  .hero { border-radius:24px; padding:28px; background:linear-gradient(120deg,#0B3B3C 0%,#0E8A7B 90%); margin-bottom:22px; }
+  .hero h1 { color:#fff; font-size:clamp(22px,4vw,30px); font-weight:800; line-height:1.15; }
+  .hero h1 em { color:#F5B82E; font-style:normal; }
+  .hero p { color:#BFE3DD; font-size:13.5px; margin-top:8px; }
+
+  /* step rail */
+  .rail { display:flex; align-items:center; gap:8px; margin-bottom:20px; font:600 12px 'Inter',sans-serif; color:#5B7573; }
+  .rail .dot { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; background:#DCE9E6; color:#7C9793; }
+  .rail .dot.done { background:#0E8A7B; color:#fff; }
+  .rail .dot.now { background:#F5B82E; color:#3B2E00; }
+  .rail .line { flex:1; height:1px; background:#CFE0DD; }
+  .rail .stx { display:none; }
+  @media(min-width:640px){ .rail .stx { display:inline; margin-left:6px; } }
+
+  .book-grid { display:grid; gap:20px; }
+  @media(min-width:820px){ .book-grid { grid-template-columns:1fr 300px; align-items:start; } }
+
+  /* service cards */
+  .svc-grid { display:grid; gap:8px; }
+  @media(min-width:560px){ .svc-grid { grid-template-columns:1fr 1fr; } }
+  .svc { text-align:left; border:1px solid #E2EEEB; background:#fff; border-radius:16px; padding:12px; cursor:pointer; font-family:'Inter',sans-serif; }
+  .svc.on { border-color:#0E8A7B; background:#EAF7F4; box-shadow:0 0 0 1px #0E8A7B; }
+  .svc b { font-size:13.5px; } .svc .d { font-size:12px; color:#5B7573; margin-top:2px; } .svc .r { font-size:12px; font-weight:600; color:#0A6B5D; margin-top:4px; }
+
+  /* steppers */
+  .step { display:flex; align-items:center; gap:10px; border:1px solid #CFE0DD; background:#fff; border-radius:12px; padding:6px 8px; }
+  .step button { width:32px; height:32px; border:0; border-radius:10px; font:700 18px 'Inter',sans-serif; cursor:pointer; }
+  .step .minus { background:#EAF4F2; color:#0A6B5D; } .step .plus { background:#0E8A7B; color:#fff; }
+  .step span { flex:1; text-align:center; font-weight:700; }
+
+  /* pills & slots */
+  .pill { flex:1; border:1px solid #E2EEEB; background:#fff; color:#5B7573; border-radius:12px; padding:10px 8px; font:600 13px 'Inter',sans-serif; cursor:pointer; text-align:center; }
+  .pill.on { border-color:#0E8A7B; background:#EAF7F4; color:#0A6B5D; }
+  .plan { border:1px solid #E2EEEB; background:#fff; border-radius:12px; padding:10px 6px; cursor:pointer; text-align:center; font-family:'Inter',sans-serif; }
+  .plan.on { border-color:#0E8A7B; background:#EAF7F4; }
+  .plan b{ font-size:13.5px; display:block; } .plan i{ font-style:normal; font-size:11.5px; color:#7C9793; } .plan.save i{ color:#0A6B5D; }
+  .plans { display:grid; grid-template-columns:1fr 1fr; gap:8px; } @media(min-width:560px){ .plans{ grid-template-columns:repeat(4,1fr);} }
+  .slots { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; } @media(min-width:560px){ .slots{ grid-template-columns:repeat(5,1fr);} }
+  .slot { border:1px solid #CFE0DD; background:#fff; color:#12312F; border-radius:12px; padding:10px 4px; font:700 13.5px 'Inter',sans-serif; cursor:pointer; transition:transform .12s; }
+  .slot:hover:not(:disabled){ transform:translateY(-1px); }
+  .slot.on { background:#0B3B3C; color:#F5B82E; border-color:#0B3B3C; }
+  .slot:disabled { background:#F0F0F0; color:#B9C6C4; border-color:#E8E8E8; text-decoration:line-through; cursor:not-allowed; }
+
+  /* summary */
+  .sum { background:#0B3B3C; border-radius:24px; padding:20px; position:sticky; top:16px; }
+  .sum .k { color:#8FC7BF; font:600 11px 'Inter',sans-serif; text-transform:uppercase; letter-spacing:.05em; }
+  .sum .price { color:#F5B82E; font-weight:800; font-size:30px; margin-top:4px; }
+  .sum .per { color:#BFE3DD; font-size:12px; margin-top:2px; }
+  .sum .li { display:flex; justify-content:space-between; color:#DFF0ED; font-size:13.5px; margin-top:8px; }
+  .sum .li.save { color:#7FE0CE; }
+  .sum .ft { border-top:1px solid #17595A; margin-top:14px; padding-top:10px; color:#8FC7BF; font-size:11.5px; }
+
+  .warn { background:#FFF4D6; color:#8A6100; border-radius:12px; padding:12px 16px; font-size:13.5px; }
+  .msgbox { background:#E7F6E9; border:1px solid #BFE3C5; border-radius:16px; padding:16px; text-align:left; }
+  .msgbox .h { color:#1B7A3D; font:700 12px 'Inter',sans-serif; margin-bottom:4px; }
+  .msgbox .b { color:#234B2E; font-size:13.5px; }
+
+  /* admin */
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; } @media(min-width:640px){ .stats{ grid-template-columns:repeat(4,1fr);} }
+  .stat { background:#fff; border:1px solid #E2EEEB; border-radius:16px; padding:14px; }
+  .stat .l { font:600 10.5px 'Inter',sans-serif; text-transform:uppercase; color:#7C9793; }
+  .stat .v { font-weight:800; font-size:20px; color:#0B3B3C; margin-top:4px; }
+  .chip { border:1px solid #CFE0DD; background:#fff; color:#5B7573; border-radius:999px; padding:6px 16px; font:600 13px 'Inter',sans-serif; cursor:pointer; }
+  .chip.on { background:#0B3B3C; color:#F5B82E; border-color:#0B3B3C; }
+  .sel { border:1px solid #CFE0DD; border-radius:10px; padding:7px 8px; font:600 12px 'Inter',sans-serif; color:#12312F; background:#fff; outline:none; cursor:pointer; }
+  .hist { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; background:#F7FBFA; border-radius:10px; padding:8px 12px; font-size:12px; }
+  .datehead { font:700 13.5px 'Inter',sans-serif; color:#5B7573; display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .datehead.today { color:#0A6B5D; }
+  .tdy { background:#F5B82E; color:#3B2E00; font-size:10.5px; padding:2px 8px; border-radius:999px; font-weight:700; }
+
+  .toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:#0B3B3C; color:#fff; padding:12px 22px; border-radius:999px; font:600 13.5px 'Inter',sans-serif; box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:50; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .toast.show { opacity:1; }
+
+  .foot { text-align:center; color:#7C9793; font-size:11.5px; padding:26px 16px; }
+  @media (prefers-reduced-motion: reduce){ #mopup-app *{ transition:none !important; animation:none !important; } }
+</style>
+
+<script>
+/* ================= data & config ================= */
+const SERVICES = [
+  { id:"house",  name:"House Cleaning",  rate:35, icon:"🏠", desc:"Every corner of your residence, professional-grade finish" },
+  { id:"deep",   name:"Deep Cleaning",   rate:45, icon:"✨", desc:"Appliances, fixtures, cabinets & floors — hygienically fresh" },
+  { id:"office", name:"Office Cleaning", rate:40, icon:"🏢", desc:"Spotless, welcoming business environment" },
+  { id:"maid",   name:"Full-Time Maid",  rate:30, icon:"🧹", desc:"Background-verified, trained help for your routine" },
+  { id:"balcony",name:"Balcony Cleaning",rate:40, icon:"🌤️", desc:"Sand, dust & grime buildup fully removed" },
+  { id:"sofa",   name:"Sofa Cleaning",   rate:45, icon:"🛋️", desc:"Restoration-level fabric & upholstery care" },
+];
+const PLANS = [
+  { id:"one",      name:"One-Time",  disc:0,    note:"Single visit" },
+  { id:"weekly",   name:"Weekly",    disc:0.10, note:"Save 10% per visit" },
+  { id:"biweekly", name:"Bi-Weekly", disc:0.07, note:"Save 7% per visit" },
+  { id:"monthly",  name:"Monthly",   disc:0.05, note:"Save 5% per visit" },
+];
+const SLOTS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+const STAFF = ["Unassigned","Team A — Maria + Joy","Team B — Anna + Grace","Team C — Rhea + Lin","Ahmed (Supervisor)"];
+const STORAGE_KEY = "mopup:bookings:v1";
+const ADMIN_PIN = "2026";
+const STATUS_META = {
+  pending:{label:"Pending",bg:"#FFF4D6",fg:"#8A6100"},
+  confirmed:{label:"Confirmed",bg:"#DFF5EE",fg:"#0A6B5D"},
+  completed:{label:"Completed",bg:"#E5EAF9",fg:"#2F4AA8"},
+  cancelled:{label:"Cancelled",bg:"#FBE3E1",fg:"#A83A31"},
+};
+const PAY_META = {
+  unpaid:{label:"Unpaid",bg:"#FBE3E1",fg:"#A83A31"},
+  partial:{label:"Partial",bg:"#FFF4D6",fg:"#8A6100"},
+  paid:{label:"Paid",bg:"#DFF5EE",fg:"#0A6B5D"},
+};
+
+/* ================= state ================= */
+const S = {
+  bookings: [], loaded: false, view: "book",
+  step: 1, done: null,
+  f: { name:"", phone:"", address:"", service:"house", cleaners:1, hours:3, materials:true, plan:"one", date:todayStr(), slot:"" },
+  managePhone:"", manageSearched:false, reschedId:null, reschedDate:todayStr(), reschedSlot:"",
+  adminOk:false, adminPin:"", adminTab:"bookings", adminRange:"week", adminQ:"",
+  cardResched:{},   // bookingId -> {date, slot} while open
+};
+
+/* ================= helpers ================= */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function niceDate(d){ try{ return new Date(d+"T00:00:00").toLocaleDateString("en-AE",{weekday:"short",day:"numeric",month:"short",year:"numeric"});}catch(e){return d;} }
+function isSunday(d){ return new Date(d+"T00:00:00").getDay()===0; }
+function genId(){ return "MU-"+Math.floor(1000+Math.random()*9000); }
+function fmtAED(n){ return "AED "+Number(n).toLocaleString(); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function calcPrice(serviceId,cleaners,hours,planId,materials){
+  const s=SERVICES.find(x=>x.id===serviceId), p=PLANS.find(x=>x.id===planId);
+  if(!s||!p) return 0;
+  let base=s.rate*cleaners*hours; if(materials) base+=10*hours;
+  return Math.round(base*(1-p.disc));
+}
+function badge(meta){ return `<span class="badge" style="background:${meta.bg};color:${meta.fg}">${meta.label}</span>`; }
+
+/* ================= persistence (window.storage with in-memory fallback) ================= */
+let memoryOnly = false;
+async function loadBookings(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(STORAGE_KEY);
+      if(res && res.value) S.bookings = JSON.parse(res.value);
+    } else { memoryOnly = true; }
+  }catch(e){ /* key not found yet or storage unavailable */ if(!window.storage) memoryOnly = true; }
+  S.loaded = true; render();
+}
+async function persist(){
+  try{ if(window.storage) await window.storage.set(STORAGE_KEY, JSON.stringify(S.bookings)); }
+  catch(e){ memoryOnly = true; }
+}
+function updateBooking(id, patch){
+  S.bookings = S.bookings.map(b => b.id===id ? Object.assign({},b,patch) : b);
+  persist(); render();
+}
+
+/* ================= toast ================= */
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById("mu-toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),3200);
+}
+
+/* ================= actions (exposed globally) ================= */
+function setView(v){ S.view=v; render(); }
+function setF(k,v){ S.f[k]=v; if(k==="date") S.f.slot=""; render(); }
+function inputF(k,el){ S.f[k]=el.value; if(k==="date") S.f.slot=""; renderSummaryOnly(); refreshStep1Btn(); }
+function setStep(n){ render(); S.step=n; render(); }
+function stepVal(k,delta,min,max){ S.f[k]=Math.min(max,Math.max(min,S.f[k]+delta)); render(); }
+
+async function confirmBooking(){
+  const f=S.f;
+  const b = Object.assign({}, f, {
+    id: genId(), price: calcPrice(f.service,f.cleaners,f.hours,f.plan,f.materials),
+    status:"pending", payment:"unpaid", staff:"Unassigned", createdAt:new Date().toISOString(),
+  });
+  S.bookings.push(b); await persist();
+  S.done=b; toast("Booking received — confirmation sent ✓"); render();
+}
+function newBooking(){ S.done=null; S.step=1; S.f.slot=""; render(); }
+
+function manageFind(){ S.managePhone=document.getElementById("mu-mphone").value; S.manageSearched=true; render(); }
+function openResched(id,date,slot){ S.reschedId=id; S.reschedDate=date; S.reschedSlot=slot; render(); }
+function closeResched(){ S.reschedId=null; render(); }
+function saveResched(id){
+  if(!S.reschedSlot || isSunday(S.reschedDate)) return;
+  updateBooking(id,{date:S.reschedDate, slot:S.reschedSlot, status:"pending"});
+  S.reschedId=null; toast("Rescheduled — new confirmation sent ✓");
+}
+function cancelBooking(id){ updateBooking(id,{status:"cancelled"}); toast("Booking cancelled"); }
+
+function tryPin(){
+  const v=document.getElementById("mu-pin").value;
+  if(v===ADMIN_PIN){ S.adminOk=true; render(); } else toast("Wrong PIN — try 2026");
+}
+function setTab(t){ S.adminTab=t; render(); }
+function setRange(r){ S.adminRange=r; render(); }
+function adminSearch(el){ S.adminQ=el.value; renderAdminCustomersOnly(); }
+function adminStatus(id,el){ updateBooking(id,{status:el.value}); toast("Marked "+STATUS_META[el.value].label.toLowerCase()+" — customer notified ✓"); }
+function adminPay(id,el){ updateBooking(id,{payment:el.value}); }
+function adminStaff(id,el){ updateBooking(id,{staff:el.value}); toast("Cleaner assigned ✓"); }
+function toggleCardResched(id,date,slot){
+  if(S.cardResched[id]) delete S.cardResched[id];
+  else S.cardResched[id]={date:date,slot:slot};
+  render();
+}
+function cardReschedDate(id,el){ S.cardResched[id].date=el.value; render(); }
+function cardReschedSlot(id,el){ S.cardResched[id].slot=el.value; }
+function cardReschedSave(id){
+  const r=S.cardResched[id]; if(!r||isSunday(r.date)) return;
+  delete S.cardResched[id];
+  updateBooking(id,{date:r.date,slot:r.slot});
+  toast("Rescheduled — customer notified ✓");
+}
+function exportCSV(){
+  const head=["Booking ID","Name","Phone","Address","Service","Cleaners","Hours","Plan","Date","Time","Price AED","Status","Payment","Staff","Created"];
+  const rows=S.bookings.map(b=>[b.id,b.name,b.phone,b.address,(SERVICES.find(s=>s.id===b.service)||{}).name,b.cleaners,b.hours,(PLANS.find(p=>p.id===b.plan)||{}).name,b.date,b.slot,b.price,b.status,b.payment,b.staff,b.createdAt]);
+  const csv=[head].concat(rows).map(r=>r.map(c=>'"'+String(c==null?"":c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv"}));
+  const a=document.createElement("a"); a.href=url; a.download="mopup-bookings-"+todayStr()+".csv"; a.click();
+  URL.revokeObjectURL(url); toast("Excel file downloaded ✓");
+}
+
+/* ================= renderers ================= */
+function render(){
+  const app=document.getElementById("mopup-app");
+  app.innerHTML = `
+    <div class="hdr"><div class="hdr-in">
+      <div class="logo">
+        <div class="logo-b">🫧</div>
+        <div><div class="logo-t display">MopUp Cleaning Services</div>
+        <div class="logo-s">Al Quoz, Dubai · Mon–Sat · 8 AM – 7 PM</div></div>
+      </div>
+      <div class="nav">
+        <button class="${S.view==='book'?'on':''}" onclick="setView('book')">Book a clean</button>
+        <button class="${S.view==='manage'?'on':''}" onclick="setView('manage')">My bookings</button>
+        <button class="${S.view==='admin'?'on':''}" onclick="setView('admin')">Admin</button>
+      </div>
+    </div></div>
+    <div class="wrap" id="mu-main">
+      ${!S.loaded ? `<div style="text-align:center;padding:80px 0" class="muted">Loading your bookings…</div>`
+        : S.view==="book" ? renderBook()
+        : S.view==="manage" ? renderManage()
+        : renderAdmin()}
+      ${memoryOnly?`<div class="warn" style="margin-top:20px">Persistent storage isn't available in this environment — bookings will reset when you close the page.</div>`:""}
+    </div>
+    <div class="foot">MopUp Cleaning Services LLC · +971 52 548 1829 · info@mopupcleaning.com — Phase 1 demo (online payments, mobile app &amp; payroll planned for later phases)</div>
+    <div class="toast" id="mu-toast"></div>`;
+  restoreFocusValues();
+}
+
+/* keep typed values when re-rendering step 1 without full input binding */
+function refreshStep1Btn(){
+  const b=document.getElementById("mu-next1");
+  if(!b) return;
+  const ok = S.f.name.trim() && S.f.phone.trim().length>=7 && S.f.address.trim();
+  b.disabled=!ok;
+}
+function renderSummaryOnly(){
+  const el=document.getElementById("mu-summary");
+  if(el) el.outerHTML = summaryHTML();
+}
+function restoreFocusValues(){ /* inputs are re-created with current values via value attr */ }
+
+function summaryHTML(){
+  const f=S.f;
+  const s=SERVICES.find(x=>x.id===f.service), p=PLANS.find(x=>x.id===f.plan);
+  const price=calcPrice(f.service,f.cleaners,f.hours,f.plan,f.materials);
+  return `<div class="sum" id="mu-summary">
+    <div class="k">Live estimate</div>
+    <div class="price display">${fmtAED(price)}</div>
+    <div class="per">${p.disc?esc(p.name)+" plan · price per visit":"One-time visit"}</div>
+    <div class="li"><span>${esc(s.name)}</span><span>AED ${s.rate}/hr</span></div>
+    <div class="li"><span>${f.cleaners} cleaner${f.cleaners>1?"s":""} × ${f.hours} hrs</span><span>${fmtAED(s.rate*f.cleaners*f.hours)}</span></div>
+    ${f.materials?`<div class="li"><span>Materials</span><span>${fmtAED(10*f.hours)}</span></div>`:""}
+    ${p.disc>0?`<div class="li save"><span>${esc(p.name)} saving</span><span>−${Math.round(p.disc*100)}%</span></div>`:""}
+    <div class="ft">✓ Eco-safe products · ✓ Background-verified team · ✓ 24-hr re-clean promise</div>
+  </div>`;
+}
+
+function renderBook(){
+  if(S.done) return renderDone();
+  const f=S.f;
+  const s=SERVICES.find(x=>x.id===f.service), p=PLANS.find(x=>x.id===f.plan);
+  const price=calcPrice(f.service,f.cleaners,f.hours,f.plan,f.materials);
+  const taken=S.bookings.filter(b=>b.date===f.date && b.status!=="cancelled").map(b=>b.slot);
+  const canNext1 = f.name.trim() && f.phone.trim().length>=7 && f.address.trim();
+  const canNext3 = f.date && !isSunday(f.date) && f.slot;
+
+  const rail = ["Your details","Service & plan","Date & time","Review"].map((t,i)=>{
+    const cls = S.step>i+1?"done":S.step===i+1?"now":"";
+    const mark = S.step>i+1?"✓":(i+1);
+    return `<span style="display:inline-flex;align-items:center"><span class="dot ${cls}">${mark}</span><span class="stx">${t}</span></span>${i<3?'<span class="line"></span>':''}`;
+  }).join("");
+
+  let stepHTML="";
+  if(S.step===1){
+    stepHTML=`<div class="grid" style="gap:14px">
+      <div class="display" style="font-weight:700;font-size:18px">Who are we cleaning for?</div>
+      <div><span class="lbl">Full name</span><input class="inp" placeholder="e.g. Sarah Mansour" value="${esc(f.name)}" oninput="inputF('name',this)"></div>
+      <div><span class="lbl">Phone / WhatsApp</span><input class="inp" placeholder="+971 5X XXX XXXX" value="${esc(f.phone)}" oninput="inputF('phone',this)"></div>
+      <div><span class="lbl">Address (area, building, unit)</span><textarea class="inp" style="min-height:70px" placeholder="e.g. Marina Heights, Tower 2, Apt 1104, Dubai Marina" oninput="inputF('address',this)">${esc(f.address)}</textarea></div>
+      <button id="mu-next1" class="btn btn-p" ${canNext1?"":"disabled"} onclick="setStep(2)">Continue → Service &amp; plan</button>
+    </div>`;
+  } else if(S.step===2){
+    stepHTML=`<div class="grid" style="gap:18px">
+      <div class="display" style="font-weight:700;font-size:18px">What do you need?</div>
+      <div class="svc-grid">${SERVICES.map(x=>`
+        <button class="svc ${f.service===x.id?'on':''}" onclick="setF('service','${x.id}')">
+          <b>${x.icon} ${esc(x.name)}</b><div class="d">${esc(x.desc)}</div><div class="r">AED ${x.rate}/hr per cleaner</div>
+        </button>`).join("")}
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div><span class="lbl">Cleaners needed</span>
+          <div class="step"><button class="minus" onclick="stepVal('cleaners',-1,1,6)">−</button><span>${f.cleaners} ${f.cleaners===1?"cleaner":"cleaners"}</span><button class="plus" onclick="stepVal('cleaners',1,1,6)">+</button></div>
+        </div>
+        <div><span class="lbl">Hours needed</span>
+          <div class="step"><button class="minus" onclick="stepVal('hours',-1,2,10)">−</button><span>${f.hours} hours</span><button class="plus" onclick="stepVal('hours',1,2,10)">+</button></div>
+        </div>
+      </div>
+      <div><span class="lbl">Cleaning materials</span>
+        <div class="row">
+          <button class="pill ${f.materials?'on':''}" onclick="setF('materials',true)">Bring materials (+AED 10/hr)</button>
+          <button class="pill ${!f.materials?'on':''}" onclick="setF('materials',false)">I have my own</button>
+        </div>
+      </div>
+      <div><span class="lbl">Plan</span>
+        <div class="plans">${PLANS.map(x=>`
+          <button class="plan ${f.plan===x.id?'on':''} ${x.disc?'save':''}" onclick="setF('plan','${x.id}')"><b>${esc(x.name)}</b><i>${esc(x.note)}</i></button>`).join("")}
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-g" onclick="setStep(1)">← Back</button>
+        <button class="btn btn-p" style="flex:1" onclick="setStep(3)">Continue → Date &amp; time</button>
+      </div>
+    </div>`;
+  } else if(S.step===3){
+    stepHTML=`<div class="grid" style="gap:14px">
+      <div class="display" style="font-weight:700;font-size:18px">When should we come?</div>
+      <div><span class="lbl">Date (we're closed Sundays)</span>
+        <input type="date" class="inp" min="${todayStr()}" value="${esc(f.date)}" onchange="setF('date',this.value)">
+      </div>
+      ${isSunday(f.date)
+        ? `<div class="warn">We're closed on Sundays — please pick Monday to Saturday.</div>`
+        : `<div><span class="lbl">Arrival time on ${niceDate(f.date)}</span>
+            <div class="slots">${SLOTS.map(sl=>{
+              const tk=taken.includes(sl), on=f.slot===sl;
+              return `<button class="slot ${on?'on':''}" ${tk?"disabled":""} onclick="setF('slot','${sl}')">${sl}</button>`;
+            }).join("")}</div>
+          </div>`}
+      <div class="row">
+        <button class="btn btn-g" onclick="setStep(2)">← Back</button>
+        <button class="btn btn-p" style="flex:1" ${canNext3?"":"disabled"} onclick="setStep(4)">Review booking →</button>
+      </div>
+    </div>`;
+  } else {
+    const rows=[
+      ["Customer", `${esc(f.name)} · ${esc(f.phone)}`],
+      ["Address", esc(f.address)],
+      ["Service", `${s.icon} ${esc(s.name)}`],
+      ["Team", `${f.cleaners} cleaner${f.cleaners>1?"s":""} × ${f.hours} hrs ${f.materials?"· materials included":"· own materials"}`],
+      ["Plan", `${esc(p.name)}${p.disc?` (${esc(p.note.toLowerCase())})`:""}`],
+      ["Schedule", `${niceDate(f.date)} at ${f.slot}`],
+    ];
+    stepHTML=`<div class="grid" style="gap:14px">
+      <div class="display" style="font-weight:700;font-size:18px">Everything look right?</div>
+      <div class="card" style="background:#FAFDFC;padding:16px">
+        ${rows.map(r=>`<div style="display:flex;gap:12px;margin-bottom:8px">
+          <span class="tiny" style="width:90px;flex-shrink:0;font-weight:600;text-transform:uppercase;padding-top:2px">${r[0]}</span>
+          <span style="font-weight:500;font-size:14px">${r[1]}</span></div>`).join("")}
+      </div>
+      <div class="tiny">Payment in person or bank transfer after service — no online payment needed.</div>
+      <div class="row">
+        <button class="btn btn-g" onclick="setStep(3)">← Back</button>
+        <button class="btn btn-y" style="flex:1" onclick="confirmBooking()">Confirm booking — ${fmtAED(price)}</button>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="hero">
+      <h1 class="display">Book a professional clean<br><em>in under a minute.</em></h1>
+      <p>Same-day service · Eco-safe products · 24-hour re-clean guarantee</p>
+    </div>
+    <div class="rail">${rail}</div>
+    <div class="book-grid">
+      <div class="card">${stepHTML}</div>
+      ${summaryHTML()}
+    </div>`;
+}
+
+function renderDone(){
+  const b=S.done, s=SERVICES.find(x=>x.id===b.service);
+  return `<div style="max-width:520px;margin:0 auto;text-align:center" class="grid">
+    <div style="font-size:48px">🫧</div>
+    <div class="display" style="font-weight:800;font-size:24px">Booking received!</div>
+    <div class="muted">Your booking ID is <b style="color:#0A6B5D">${b.id}</b>. Save it — you can reschedule or cancel anytime from "My bookings".</div>
+    <div class="msgbox">
+      <div class="h">💬 WhatsApp · SMS · Email confirmation</div>
+      <div class="b">Hi ${esc(b.name.split(" ")[0])} 👋 Your <b>${esc(s.name)}</b> is booked for <b>${niceDate(b.date)} at ${b.slot}</b> — ${b.cleaners} cleaner${b.cleaners>1?"s":""}, ${b.hours} hrs. Total ${fmtAED(b.price)}. Booking ID ${b.id}. Reply here to change anything. — MopUp Cleaning 🫧</div>
+    </div>
+    <button class="btn btn-p" style="margin:0 auto" onclick="newBooking()">Book another clean</button>
+  </div>`;
+}
+
+function renderManage(){
+  const phone=S.managePhone.replace(/\s/g,"");
+  const mine = S.manageSearched && phone.length>=6
+    ? S.bookings.filter(b=>b.phone.replace(/\s/g,"").includes(phone)).sort((a,b)=>a.date<b.date?1:-1)
+    : [];
+  return `<div style="max-width:640px;margin:0 auto" class="grid">
+    <div class="display" style="font-weight:800;font-size:24px">My bookings</div>
+    <div class="muted">Enter the phone number you booked with to view, reschedule or cancel.</div>
+    <div class="row" style="flex-wrap:nowrap">
+      <input id="mu-mphone" class="inp" placeholder="+971 5X XXX XXXX" value="${esc(S.managePhone)}">
+      <button class="btn btn-p" style="flex-shrink:0" onclick="manageFind()">Find</button>
+    </div>
+    ${S.manageSearched && mine.length===0 ? `<div class="warn">No bookings found for that number. Check the digits, or call us on +971 52 548 1829.</div>`:""}
+    ${mine.map(b=>{
+      const s=SERVICES.find(x=>x.id===b.service);
+      const past=b.date<todayStr();
+      const isR=S.reschedId===b.id;
+      return `<div class="card grid" style="gap:12px">
+        <div class="row" style="justify-content:space-between">
+          <div style="font-weight:700">${s.icon} ${esc(s.name)} <span class="tiny" style="font-weight:600;margin-left:4px">${b.id}</span></div>
+          ${badge(STATUS_META[b.status])}
+        </div>
+        <div class="muted">${niceDate(b.date)} at ${b.slot} · ${b.cleaners} cleaner${b.cleaners>1?"s":""} × ${b.hours} hrs · ${fmtAED(b.price)}</div>
+        ${b.status!=="cancelled" && !past ? (isR ? `
+          <div class="grid" style="gap:10px;background:#F2F7F6;border-radius:14px;padding:12px">
+            <div class="row">
+              <input type="date" class="inp" style="flex:1" min="${todayStr()}" value="${esc(S.reschedDate)}" onchange="S.reschedDate=this.value;S.reschedSlot='';render()">
+              <select class="inp" style="flex:1" onchange="S.reschedSlot=this.value">
+                <option value="">Pick time…</option>
+                ${SLOTS.map(sl=>`<option value="${sl}" ${S.reschedSlot===sl?"selected":""}>${sl}</option>`).join("")}
+              </select>
+            </div>
+            ${isSunday(S.reschedDate)?`<div class="tiny" style="color:#A83A31">Closed Sundays — pick another day.</div>`:""}
+            <div class="row">
+              <button class="btn btn-g btn-sm" onclick="closeResched()">Keep original</button>
+              <button class="btn btn-p btn-sm" style="flex:1" onclick="saveResched('${b.id}')">Confirm new time</button>
+            </div>
+          </div>` : `
+          <div class="row">
+            <button class="btn btn-g btn-sm" onclick="openResched('${b.id}','${b.date}','${b.slot}')">Reschedule</button>
+            <button class="btn btn-r btn-sm" onclick="cancelBooking('${b.id}')">Cancel booking</button>
+          </div>`) : ""}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderAdmin(){
+  if(!S.adminOk){
+    return `<div style="max-width:340px;margin:0 auto;text-align:center;padding-top:40px" class="grid">
+      <div style="font-size:40px">🔐</div>
+      <div class="display" style="font-weight:800;font-size:20px">Team access</div>
+      <div class="muted">Enter the admin PIN (demo PIN: <b>2026</b>)</div>
+      <input id="mu-pin" class="inp" type="password" maxlength="4" placeholder="••••" style="text-align:center;font-size:18px;letter-spacing:.3em" onkeydown="if(event.key==='Enter')tryPin()">
+      <button class="btn btn-d" onclick="tryPin()">Unlock dashboard</button>
+    </div>`;
+  }
+  const now=new Date();
+  const inRange=d=>{
+    if(S.adminRange==="all") return true;
+    const dd=new Date(d+"T00:00:00");
+    if(S.adminRange==="today") return d===todayStr();
+    if(S.adminRange==="week"){ const diff=(dd-new Date(todayStr()+"T00:00:00"))/86400000; return diff>=-1&&diff<=7; }
+    return dd.getMonth()===now.getMonth() && dd.getFullYear()===now.getFullYear();
+  };
+  const visible=S.bookings.filter(b=>inRange(b.date)).sort((a,b)=>(a.date+a.slot)>(b.date+b.slot)?1:-1);
+  const byDate={}; visible.forEach(b=>{ (byDate[b.date]=byDate[b.date]||[]).push(b); });
+  const stats={
+    today:S.bookings.filter(b=>b.date===todayStr()&&b.status!=="cancelled").length,
+    pending:S.bookings.filter(b=>b.status==="pending").length,
+    unpaid:S.bookings.filter(b=>b.payment!=="paid"&&b.status!=="cancelled").length,
+    revenue:S.bookings.filter(b=>b.payment==="paid").reduce((s,b)=>s+b.price,0),
+  };
+  return `<div class="grid" style="gap:18px">
+    <div class="row" style="justify-content:space-between">
+      <div class="display" style="font-weight:800;font-size:24px">Team dashboard</div>
+      <button class="btn btn-d btn-sm" onclick="exportCSV()">⬇ Export to Excel</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="l">Jobs today</div><div class="v display">${stats.today}</div></div>
+      <div class="stat"><div class="l">Pending approval</div><div class="v display">${stats.pending}</div></div>
+      <div class="stat"><div class="l">Unpaid jobs</div><div class="v display">${stats.unpaid}</div></div>
+      <div class="stat"><div class="l">Collected</div><div class="v display">${fmtAED(stats.revenue)}</div></div>
+    </div>
+    <div class="row">
+      <button class="btn ${S.adminTab==='bookings'?'btn-p':'btn-g'} btn-sm" onclick="setTab('bookings')">📅 Bookings calendar</button>
+      <button class="btn ${S.adminTab==='customers'?'btn-p':'btn-g'} btn-sm" onclick="setTab('customers')">👤 Customers &amp; history</button>
+    </div>
+    ${S.adminTab==="bookings" ? `
+      <div class="row">
+        ${[["today","Today"],["week","This week"],["month","This month"],["all","All"]].map(r=>
+          `<button class="chip ${S.adminRange===r[0]?'on':''}" onclick="setRange('${r[0]}')">${r[1]}</button>`).join("")}
+      </div>
+      ${visible.length===0?`<div class="card" style="text-align:center;padding:52px 20px" ><span class="tiny">No bookings in this period yet. New customer bookings appear here instantly.</span></div>`:""}
+      ${Object.keys(byDate).map(date=>`
+        <div class="grid" style="gap:10px">
+          <div class="datehead ${date===todayStr()?'today':''}">${niceDate(date)} ${date===todayStr()?'<span class="tdy">TODAY</span>':''}<span class="tiny" style="font-weight:400">· ${byDate[date].length} job${byDate[date].length>1?"s":""}</span></div>
+          ${byDate[date].map(adminCard).join("")}
+        </div>`).join("")}
+    ` : `
+      <input class="inp" placeholder="Search customer by name or phone…" value="${esc(S.adminQ)}" oninput="adminSearch(this)">
+      <div id="mu-custlist">${customersHTML()}</div>
+    `}
+  </div>`;
+}
+
+function customersHTML(){
+  const map={};
+  S.bookings.forEach(b=>{
+    const k=b.phone.replace(/\s/g,"");
+    map[k]=map[k]||{name:b.name,phone:b.phone,address:b.address,jobs:[]};
+    map[k].jobs.push(b);
+  });
+  const q=S.adminQ.toLowerCase();
+  const list=Object.values(map).filter(c=>!q||c.name.toLowerCase().includes(q)||c.phone.includes(S.adminQ));
+  if(list.length===0) return `<div class="tiny" style="text-align:center;padding:36px 0">No matching customers.</div>`;
+  return list.map(c=>`
+    <div class="card grid" style="gap:10px;margin-bottom:14px">
+      <div class="row" style="justify-content:space-between">
+        <div><div style="font-weight:700">${esc(c.name)}</div><div class="tiny">${esc(c.phone)} · ${esc(c.address)}</div></div>
+        <span class="badge" style="background:#EAF4F2;color:#0A6B5D">${c.jobs.length} booking${c.jobs.length>1?"s":""} · lifetime ${fmtAED(c.jobs.reduce((s,j)=>s+(j.status!=="cancelled"?j.price:0),0))}</span>
+      </div>
+      ${c.jobs.sort((a,b)=>a.date<b.date?1:-1).map(j=>`
+        <div class="hist">
+          <span style="font-weight:600">${j.id}</span>
+          <span>${esc((SERVICES.find(s=>s.id===j.service)||{}).name)}</span>
+          <span class="tiny">${niceDate(j.date)} · ${j.slot}</span>
+          <span style="font-weight:600">${fmtAED(j.price)}</span>
+          <span class="row" style="gap:4px">${badge(STATUS_META[j.status])}${badge(PAY_META[j.payment])}</span>
+        </div>`).join("")}
+    </div>`).join("");
+}
+function renderAdminCustomersOnly(){
+  const el=document.getElementById("mu-custlist");
+  if(el) el.innerHTML=customersHTML();
+}
+
+function adminCard(b){
+  const s=SERVICES.find(x=>x.id===b.service);
+  const r=S.cardResched[b.id];
+  return `<div class="card grid" style="gap:12px;${b.status==='cancelled'?'opacity:.7;border-color:#F3D9D7':''}">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-weight:700;font-size:14px">${b.slot} — ${s.icon} ${esc(s.name)} <span class="tiny" style="font-weight:600">${b.id}</span></div>
+        <div class="tiny" style="margin-top:2px">${esc(b.name)} · ${esc(b.phone)} · ${esc(b.address)}</div>
+        <div class="tiny" style="margin-top:2px">${b.cleaners} cleaner${b.cleaners>1?"s":""} × ${b.hours} hrs · ${esc((PLANS.find(p=>p.id===b.plan)||{}).name)} · <b style="color:#0A6B5D">${fmtAED(b.price)}</b></div>
+      </div>
+      <span class="row" style="gap:6px">${badge(STATUS_META[b.status])}${badge(PAY_META[b.payment])}</span>
+    </div>
+    <div class="row">
+      <select class="sel" onchange="adminStatus('${b.id}',this)">
+        ${Object.keys(STATUS_META).map(k=>`<option value="${k}" ${b.status===k?"selected":""}>Status: ${STATUS_META[k].label}</option>`).join("")}
+      </select>
+      <select class="sel" onchange="adminPay('${b.id}',this)">
+        ${Object.keys(PAY_META).map(k=>`<option value="${k}" ${b.payment===k?"selected":""}>Payment: ${PAY_META[k].label}</option>`).join("")}
+      </select>
+      <select class="sel" onchange="adminStaff('${b.id}',this)">
+        ${STAFF.map(st=>`<option value="${esc(st)}" ${b.staff===st?"selected":""}>${st==="Unassigned"?"Assign cleaner…":esc(st)}</option>`).join("")}
+      </select>
+      <button class="btn btn-g btn-sm" onclick="toggleCardResched('${b.id}','${b.date}','${b.slot}')">${r?"Close":"Reschedule"}</button>
+    </div>
+    ${r?`<div class="row" style="background:#F2F7F6;border-radius:14px;padding:12px">
+      <input type="date" class="sel" value="${esc(r.date)}" onchange="cardReschedDate('${b.id}',this)">
+      <select class="sel" onchange="cardReschedSlot('${b.id}',this)">
+        ${SLOTS.map(sl=>`<option value="${sl}" ${r.slot===sl?"selected":""}>${sl}</option>`).join("")}
+      </select>
+      <button class="btn btn-p btn-sm" ${isSunday(r.date)?"disabled":""} onclick="cardReschedSave('${b.id}')">Save new time</button>
+      ${isSunday(r.date)?`<span class="tiny" style="color:#A83A31">Closed Sundays</span>`:""}
+    </div>`:""}
+  </div>`;
+}
+
+/* ================= boot ================= */
+render();
+loadBookings();
+</script>
+</body>
+</html>
